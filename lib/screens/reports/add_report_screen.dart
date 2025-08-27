@@ -5,6 +5,8 @@ import '../../services/api_service.dart';
 import '../../utils/constants.dart';
 
 class AddReportScreen extends StatefulWidget {
+  const AddReportScreen({super.key});
+
   @override
   _AddReportScreenState createState() => _AddReportScreenState();
 }
@@ -22,12 +24,21 @@ class _AddReportScreenState extends State<AddReportScreen> {
       allowedExtensions: ['pdf', 'jpg', 'png'],
     );
     if (result != null && result.files.single.path != null) {
-      setState(() => selectedFile = File(result.files.single.path!));
+      setState(() {
+        selectedFile = File(result.files.single.path!);
+      });
     }
   }
 
   Future<void> uploadReport() async {
-    if (!_formKey.currentState!.validate() || selectedFile == null) return;
+    if (!_formKey.currentState!.validate() || selectedFile == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Please fill all fields and select a file"),
+        ),
+      );
+      return;
+    }
 
     setState(() => isSubmitting = true);
 
@@ -43,47 +54,58 @@ class _AddReportScreenState extends State<AddReportScreen> {
     setState(() => isSubmitting = false);
 
     if (response.statusCode == 201) {
-      Navigator.pop(context);
+      Navigator.pop(context, true);
     } else {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text("Failed to upload report")));
+      ).showSnackBar(const SnackBar(content: Text("Failed to upload report")));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Upload Report")),
-      body: Padding(
+      appBar: AppBar(title: const Text("Upload Report")),
+      body: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               TextFormField(
                 controller: titleController,
-                decoration: InputDecoration(labelText: "Report Title"),
-                validator: (value) => value!.isEmpty ? "Enter title" : null,
+                decoration: const InputDecoration(labelText: "Report Title"),
+                validator: (value) =>
+                    value == null || value.isEmpty ? "Enter title" : null,
               ),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: descriptionController,
-                decoration: InputDecoration(labelText: "Description"),
+                decoration: const InputDecoration(labelText: "Description"),
+                maxLines: 3,
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               ElevatedButton.icon(
-                icon: Icon(Icons.attach_file),
+                icon: const Icon(Icons.attach_file),
                 label: Text(
                   selectedFile == null ? "Choose File" : "File Selected",
                 ),
                 onPressed: pickFile,
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 24),
               isSubmitting
-                  ? CircularProgressIndicator()
+                  ? const Center(child: CircularProgressIndicator())
                   : ElevatedButton(
                       onPressed: uploadReport,
-                      child: Text("Upload Report"),
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 12),
+                        child: Text(
+                          "Upload Report",
+                          style: TextStyle(fontSize: 16),
+                        ),
+                      ),
                     ),
             ],
           ),

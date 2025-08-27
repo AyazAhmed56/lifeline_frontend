@@ -4,10 +4,10 @@ import '../../utils/constants.dart';
 
 class ReportDetailScreen extends StatelessWidget {
   final Map report;
-
-  ReportDetailScreen({required this.report});
+  const ReportDetailScreen({super.key, required this.report});
 
   Future<void> openFile() async {
+    if (report['file_url'] == null) return;
     final url = "${ApiConstants.baseUrl}/${report['file_url']}";
     if (await canLaunchUrl(Uri.parse(url))) {
       await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
@@ -17,7 +17,7 @@ class ReportDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Report Details")),
+      appBar: AppBar(title: const Text("Report Details")),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -25,18 +25,19 @@ class ReportDetailScreen extends StatelessWidget {
           children: [
             Text(
               "Title: ${report["title"] ?? "N/A"}",
-              style: TextStyle(fontSize: 18),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text("Date: ${report["date"] ?? "N/A"}"),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text("Description: ${report["description"] ?? "None"}"),
-            SizedBox(height: 20),
-            ElevatedButton.icon(
-              icon: Icon(Icons.open_in_new),
-              label: Text("Open File"),
-              onPressed: openFile,
-            ),
+            const SizedBox(height: 20),
+            if (report['file_url'] != null)
+              ElevatedButton.icon(
+                icon: const Icon(Icons.open_in_new),
+                label: const Text("Open File"),
+                onPressed: openFile,
+              ),
           ],
         ),
       ),

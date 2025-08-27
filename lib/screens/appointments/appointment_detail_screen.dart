@@ -1,4 +1,3 @@
-// import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
 
@@ -50,15 +49,23 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Doctor: ${appt['doctor_name']}",
-              style: const TextStyle(fontSize: 18),
+              "Doctor: ${appt['doctor_name'] ?? 'N/A'}",
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
-            Text("Date: ${appt['date']}", style: const TextStyle(fontSize: 16)),
+            Text(
+              "Hospital: ${appt['hospital_name'] ?? 'N/A'}",
+              style: const TextStyle(fontSize: 16),
+            ),
             const SizedBox(height: 10),
             Text(
-              "Notes: ${appt['notes'] ?? 'No notes'}",
-              style: const TextStyle(fontSize: 14),
+              "Date: ${appt['appointment_date'] ?? 'N/A'}",
+              style: const TextStyle(fontSize: 16),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              "Status: ${appt['status'] ?? 'pending'}",
+              style: const TextStyle(fontSize: 16),
             ),
           ],
         ),

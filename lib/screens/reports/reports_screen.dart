@@ -6,6 +6,8 @@ import 'add_report_screen.dart';
 import 'report_detail_screen.dart';
 
 class ReportsScreen extends StatefulWidget {
+  const ReportsScreen({super.key});
+
   @override
   _ReportsScreenState createState() => _ReportsScreenState();
 }
@@ -21,46 +23,71 @@ class _ReportsScreenState extends State<ReportsScreen> {
   }
 
   Future<void> fetchReports() async {
-    final response = await ApiService.getRequest(ApiConstants.reports);
-    if (response.statusCode == 200) {
-      setState(() {
-        reports = jsonDecode(response.body);
-        isLoading = false;
-      });
-    } else {
+    setState(() => isLoading = true);
+    try {
+      final response = await ApiService.getRequest(ApiConstants.reports);
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          reports = data is List ? data : data["data"] ?? [];
+          isLoading = false;
+        });
+      } else {
+        setState(() => isLoading = false);
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Failed to load reports")));
+      }
+    } catch (e) {
       setState(() => isLoading = false);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error: $e")));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Reports")),
+      appBar: AppBar(title: const Text("Reports")),
       body: isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
+          : reports.isEmpty
+          ? const Center(child: Text("No reports found"))
           : ListView.builder(
+              padding: const EdgeInsets.all(12),
               itemCount: reports.length,
               itemBuilder: (context, index) {
                 final report = reports[index];
-                return ListTile(
-                  leading: Icon(Icons.picture_as_pdf, color: Colors.red),
-                  title: Text(report["title"] ?? "Untitled Report"),
-                  subtitle: Text(report["date"] ?? "N/A"),
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => ReportDetailScreen(report: report),
+                return Card(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 4,
+                  margin: const EdgeInsets.symmetric(vertical: 6),
+                  child: ListTile(
+                    leading: const Icon(
+                      Icons.picture_as_pdf,
+                      color: Colors.red,
+                    ),
+                    title: Text(report["title"] ?? "Untitled Report"),
+                    subtitle: Text(report["date"] ?? "N/A"),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ReportDetailScreen(report: report),
+                      ),
                     ),
                   ),
                 );
               },
             ),
       floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.upload_file),
+        child: const Icon(Icons.upload_file),
         onPressed: () => Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => AddReportScreen()),
-        ).then((_) => fetchReports()), // refresh after upload
+          MaterialPageRoute(builder: (_) => const AddReportScreen()),
+        ).then((_) => fetchReports()),
       ),
     );
   }
